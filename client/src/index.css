@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+body {
+    background-color: #f3f4f6;
+}
+
+/* Global scrollbar hiding */
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Legacy Product Details Styles */
+.product-details {
+    font-size: 13px !important;
+    color: #212121 !important;
+    line-height: 1.6;
+}
+
+.product-details div {
+    max-width: 100vw !important;
+}
+
+.product-details > div {
+    padding: 0 !important;
+}
+
+/* Legacy Global Font */
+body,a,p,span,div,input,button,h1,h2,h3,h4,h5,h6,button, input, optgroup, select, textarea {
+    font-family: 'roboto', sans-serif !important;
+}
+
+/* Legacy overrides handled by imported custom.css and bootstrap.min.css */
+
+
