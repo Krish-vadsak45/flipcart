@@ -6,9 +6,8 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import axios from "axios";
 
-// 2. Configure Global Settings
-axios.defaults.baseURL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000";
+// // 2. Configure Global Settings
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 axios.defaults.withCredentials = true; // Required if you use cookies/sessions
 
 ReactDOM.createRoot(document.getElementById("root")).render(
