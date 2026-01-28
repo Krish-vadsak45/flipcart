@@ -4,7 +4,7 @@ const ipCheckMiddleware = async (req, res, next) => {
   try {
     // 1. Fetch allowed_ip from settings
     const [settings] = await db.query(
-      "SELECT allowed_ip FROM tbl_setting WHERE id = 1",
+      "SELECT allowed_ip FROM tbl_settings WHERE id = 1",
     );
     if (!settings || settings.length === 0) {
       return next(); // No settings, proceed (or should we fail open? Legacy implies if setting exists check it)

@@ -102,15 +102,27 @@ const getProductById = async (req, res) => {
     // 1. Main Query: Product Details + Group Concat sizes/storages
     // Matches logic: INNER JOIN to ensure variants exist, and GROUP_CONCAT for aggregate fields
     const queryProduct = `
-      SELECT DISTINCT p.*, 
-        GROUP_CONCAT(DISTINCT pv.size) AS sizes, 
+      SELECT 
+        p.id,
+        p.name,
+        p.color,
+        p.selling_price AS price,
+        p.mrp,
+        p.features AS description,
+        p.img1,
+        p.img2,
+        p.img3,
+        p.img4,
+        p.img5,
+        GROUP_CONCAT(DISTINCT pv.size) AS sizes,
         GROUP_CONCAT(DISTINCT pv.storage) AS storages
-      FROM tbl_product p 
-      INNER JOIN tbl_product_verient pv ON pv.product_id = p.id 
+      FROM tbl_product p
+      INNER JOIN tbl_product_verient pv ON pv.product_id = p.id
       WHERE MD5(p.id) = ?
+      GROUP BY p.id;
     `;
 
-    const [products] = await db.query(queryProduct, [id]);
+    const [products] = await db.query(queryProduct, [req.params.id]);
 
     // Since we use aggregation without GROUP BY (like the legacy code),
     // it returns 1 row even if no match found (with NULLs), so checks are needed.
@@ -132,10 +144,13 @@ const getProductById = async (req, res) => {
 
     // 3. Fetch Distinct Colors (Legacy logic: GROUP BY pv.color)
     const [colors] = await db.query(
-      `SELECT DISTINCT pv.color as color_name, pv.img1 as color_img 
-       FROM tbl_product_verient pv 
-       WHERE pv.product_id = ? 
-       GROUP BY pv.color`,
+      `SELECT 
+        pv.color AS color_name,
+        MIN(pv.img1) AS color_img
+      FROM tbl_product_verient pv
+      WHERE pv.product_id = ?
+      GROUP BY pv.color;
+      `,
       [product.id],
     );
     product.colors = colors;
