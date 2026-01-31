@@ -1,16 +1,47 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Payment = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
-  const [selectedMethod, setSelectedMethod] = useState("phonepe"); // Default matching legacy logic
+  const [selectedMethod, setSelectedMethod] = useState("phonepe");
+  const [settings, setSettings] = useState({
+    show_gpay: true,
+    show_phonepe: true,
+    show_paytm: true,
+    upi: "fsv.470000099388045@icici",
+  });
 
   useEffect(() => {
     const savedProduct = localStorage.getItem("selected_verient");
     if (savedProduct) {
       setProduct(JSON.parse(savedProduct));
     }
+
+    // Fetch settings from API
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/products/settings",
+        );
+        if (response.data.success) {
+          setSettings(response.data.data);
+          // Set initial selected method based on availability
+          const data = response.data.data;
+          if (data.show_phonepe) {
+            setSelectedMethod("phonepe");
+          } else if (data.show_gpay) {
+            setSelectedMethod("gpay");
+          } else if (data.show_paytm) {
+            setSelectedMethod("paytm");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+    fetchSettings();
   }, []);
 
   if (!product) {
@@ -39,7 +70,7 @@ const Payment = () => {
     if (!product) return;
 
     const orderNumber = Math.floor(Math.random() * 10000000000);
-    const upi_address = "fsv.470000099388045@icici";
+    const upi_address = settings.upi || "fsv.470000099388045@icici";
     const site_name = "Verified Seller";
     // Important: The actual amount charged is the original selling price
     const amt = parseFloat(product.selling_price).toFixed(2);
@@ -73,7 +104,7 @@ const Payment = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen pb-[70px]">
+    <div className="bg-white min-h-screen lg:pb-[70px]">
       {/* Header */}
       <div className="container mx-auto min-w-full p-3 pb-0 bg-white sticky top-0 z-50 shadow-sm">
         <div className="flex items-center justify-between">
@@ -95,13 +126,13 @@ const Payment = () => {
                 Payments
               </h5>
             </div>
-            <div className="flex items-center px-60 ml-175 justify-center bg-[#f5f5f5] rounded py-1">
+            <div className="flex items-center px-2 md:px-4 justify-center bg-[#f5f5f5] rounded py-1 ml-auto">
               <img
                 src="/assets/images/lock-icon.svg"
                 alt="Secure"
                 className="w-4 h-4"
               />
-              <p className="mb-0 ml-1 text-[12px] font-bold text-gray-600">
+              <p className="mb-0 ml-1 text-[10px] md:text-[12px] font-bold text-gray-600 whitespace-nowrap">
                 100% Secure
               </p>
             </div>
@@ -130,105 +161,111 @@ const Payment = () => {
 
           <div className="p-2 mb-0.5 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] m-2 bg-white rounded">
             {/* PhonePe */}
-            <div
-              className={`flex items-center justify-between p-3 mb-2 cursor-pointer ${
-                selectedMethod === "phonepe" ? "active" : ""
-              }`}
-              onClick={() => setSelectedMethod("phonepe")}
-            >
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  name="upi"
-                  checked={selectedMethod === "phonepe"}
-                  onChange={() => setSelectedMethod("phonepe")}
-                  className="w-5 h-5 mr-3 accent-blue-600"
-                />
-                <div>
-                  <div className="flex gap-2 font-bold text-[15px] items-center text-gray-800">
-                    <span className="">₹{displayPrice}</span>
-                    <span className=" text-gray-400 font-light">|</span>
-                    <span>PhonePe</span>
+            {settings.show_phonepe && (
+              <div
+                className={`flex items-center justify-between p-3 mb-2 cursor-pointer ${
+                  selectedMethod === "phonepe" ? "active" : ""
+                }`}
+                onClick={() => setSelectedMethod("phonepe")}
+              >
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    name="upi"
+                    checked={selectedMethod === "phonepe"}
+                    onChange={() => setSelectedMethod("phonepe")}
+                    className="w-5 h-5 mr-3 accent-blue-600"
+                  />
+                  <div>
+                    <div className="flex gap-2 font-bold text-[15px] items-center text-gray-800">
+                      <span className="">₹{displayPrice}</span>
+                      <span className=" text-gray-400 font-light">|</span>
+                      <span>PhonePe</span>
+                    </div>
+                    <p className="text-[14px] text-[#875BB7] mt-0.5">
+                      20% Extra Discount By PhonePe
+                    </p>
                   </div>
-                  <p className="text-[14px] text-[#875BB7] mt-0.5">
-                    20% Extra Discount By PhonePe
-                  </p>
                 </div>
+                <img
+                  src="/assets/images/phonepe.svg"
+                  alt="PhonePe"
+                  className="w-[30px]"
+                />
               </div>
-              <img
-                src="/assets/images/phonepe.svg"
-                alt="PhonePe"
-                className="w-[30px]"
-              />
-            </div>
+            )}
 
             {/* GPay */}
-            <div
-              className={`flex items-center justify-between p-3 mb-2 cursor-pointer ${
-                selectedMethod === "gpay" ? "active" : ""
-              }`}
-              onClick={() => setSelectedMethod("gpay")}
-            >
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  name="upi"
-                  checked={selectedMethod === "gpay"}
-                  onChange={() => setSelectedMethod("gpay")}
-                  className="w-5 h-5 mr-3 accent-blue-600"
-                />
-                <div>
-                  <div className="flex gap-2 font-bold text-[15px] items-center text-gray-800">
-                    <span>₹{displayPrice}</span>
-                    <span className="text-gray-400 font-light">|</span>
-                    <span>GPay</span>
-                    <span className="text-gray-400 font-light">|</span>
-                    {/* <span className="text-[#ff4700]">Save ₹50</span> */}
+            {settings.show_gpay && (
+              <div
+                className={`flex items-center justify-between p-3 mb-2 cursor-pointer ${
+                  selectedMethod === "gpay" ? "active" : ""
+                }`}
+                onClick={() => setSelectedMethod("gpay")}
+              >
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    name="upi"
+                    checked={selectedMethod === "gpay"}
+                    onChange={() => setSelectedMethod("gpay")}
+                    className="w-5 h-5 mr-3 accent-blue-600"
+                  />
+                  <div>
+                    <div className="flex gap-2 font-bold text-[15px] items-center text-gray-800">
+                      <span>₹{displayPrice}</span>
+                      <span className="text-gray-400 font-light">|</span>
+                      <span>GPay</span>
+                      <span className="text-gray-400 font-light">|</span>
+                      {/* <span className="text-[#ff4700]">Save ₹50</span> */}
+                    </div>
+                    <p className="text-[14px] text-[#34A853] mt-0.5">
+                      20% Extra Discount By Gpay
+                    </p>
                   </div>
-                  <p className="text-[14px] text-[#34A853] mt-0.5">
-                    20% Extra Discount By Gpay
-                  </p>
                 </div>
+                <img
+                  src="/assets/images/gpay_icon.svg"
+                  alt="GPay"
+                  className="w-[30px]"
+                />
               </div>
-              <img
-                src="/assets/images/gpay_icon.svg"
-                alt="GPay"
-                className="w-[30px]"
-              />
-            </div>
+            )}
 
             {/* Paytm */}
-            <div
-              className={`flex items-center justify-between p-3 border-t border-gray-200 cursor-pointer ${
-                selectedMethod === "paytm" ? "active" : ""
-              }`}
-              onClick={() => setSelectedMethod("paytm")}
-            >
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  name="upi"
-                  checked={selectedMethod === "paytm"}
-                  onChange={() => setSelectedMethod("paytm")}
-                  className="w-5 h-5 mr-3 accent-blue-600"
-                />
-                <div>
-                  <div className="flex gap-2 font-bold text-[15px] items-center text-gray-800">
-                    <span>₹{displayPrice}</span>
-                    <span className="text-gray-400 font-light">|</span>
-                    <span>PayTM</span>
+            {settings.show_paytm && (
+              <div
+                className={`flex items-center justify-between p-3 border-t border-gray-200 cursor-pointer ${
+                  selectedMethod === "paytm" ? "active" : ""
+                }`}
+                onClick={() => setSelectedMethod("paytm")}
+              >
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    name="upi"
+                    checked={selectedMethod === "paytm"}
+                    onChange={() => setSelectedMethod("paytm")}
+                    className="w-5 h-5 mr-3 accent-blue-600"
+                  />
+                  <div>
+                    <div className="flex gap-2 font-bold text-[15px] items-center text-gray-800">
+                      <span>₹{displayPrice}</span>
+                      <span className="text-gray-400 font-light">|</span>
+                      <span>PayTM</span>
+                    </div>
+                    <p className="text-[14px] text-[#02B9EF] mt-0.5">
+                      15% Extra Discount By Paytm
+                    </p>
                   </div>
-                  <p className="text-[14px] text-[#02B9EF] mt-0.5">
-                    15% Extra Discount By Paytm
-                  </p>
                 </div>
+                <img
+                  src="/assets/images/paytm_icon.svg"
+                  alt="Paytm"
+                  className="w-[30px]"
+                />
               </div>
-              <img
-                src="/assets/images/paytm_icon.svg"
-                alt="Paytm"
-                className="w-[30px]"
-              />
-            </div>
+            )}
           </div>
         </div>
 
@@ -240,7 +277,7 @@ const Payment = () => {
               Cashback on First Order!
             </p>
           </div>
-          <div className="text-[14px] text-justify leading-snug -mt-3 w-90">
+          <div className="text-[14px] text-justify leading-snug -mt-3 w-full max-w-md">
             Place your order on this Flipkart product and get{" "}
             <span className="font-bold text-gray-900">₹{cashbackPrice}</span>{" "}
             cashback! Cashback will be credited to your original UPI payment
@@ -285,13 +322,29 @@ const Payment = () => {
           <img
             src="/assets/images/SecurePay.jpg"
             alt="Secure Pay"
-            className="w-full h-100 max-w-sm min-w-255"
+            className="w-full lg:h-100 max-w-sm mb-25 lg:mb-0 lg:min-w-255"
           />
         </div>
       </div>
 
       {/* Footer */}
-      <div className="fixed bottom-0 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] p-3 flex z-50 justify-between items-center mx-auto left-0 right-0">
+      {/* Mobile Footer (Exact match to image) */}
+      <div className="fixed bottom-10 left-0 right-0 w-full bg-white shadow-[0_-1px_5px_rgba(0,0,0,0.1)] p-4 px-6 flex md:hidden z-50 justify-between items-center border-t border-gray-100">
+        <div className="flex items-center">
+          <span className="text-[24px] font-medium text-[#212121]">
+            ₹{sellingPrice}
+          </span>
+        </div>
+        <button
+          className="bg-[#FFC107] text-black font-bold py-3 px-8 rounded-lg shadow-sm uppercase text-[15px] cursor-pointer border-none"
+          onClick={handlePayment}
+        >
+          PROCEED TO PAY
+        </button>
+      </div>
+
+      {/* Desktop Footer (Original) */}
+      <div className="hidden md:flex fixed bottom-0 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] p-3 z-50 justify-between items-center mx-auto left-0 right-0">
         <div className="w-[50%] px-2">
           <span className="text-[18px] block leading-none">
             ₹{sellingPrice}

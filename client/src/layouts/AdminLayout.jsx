@@ -282,12 +282,16 @@ const AdminLayout = () => {
                 }
                 title={isSidebarCollapsed ? item.label : ""}
               >
-                <item.icon
-                  className={`w-[18px] h-[18px] ${isSidebarCollapsed ? "mx-auto" : "mr-3"}`}
-                />
-                {!isSidebarCollapsed && <span>{item.label}</span>}
-                {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#727cf5]" />
+                {({ isActive }) => (
+                  <>
+                    <item.icon
+                      className={`w-[18px] h-[18px] ${isSidebarCollapsed ? "mx-auto" : "mr-3"}`}
+                    />
+                    {!isSidebarCollapsed && <span>{item.label}</span>}
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#727cf5]" />
+                    )}
+                  </>
                 )}
               </NavLink>
             ))}

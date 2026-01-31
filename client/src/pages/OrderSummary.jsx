@@ -83,7 +83,7 @@ const OrderSummary = () => {
       </div>
 
       {/* Address Section */}
-      <div className="bg-white px-4 py-4 -mt-43 top-0 z-50 relative">
+      <div className="bg-white px-4 py-4 lg:-mt-43 top-0 z-50 relative">
         <div className="flex justify-between items-center w-full mb-2">
           <h3 className="text-[#111112] font-bold text-[18px]">Deliver to:</h3>
           <button
@@ -332,7 +332,7 @@ const OrderSummary = () => {
       </div>
 
       {/* Safety Banner */}
-      <div className="flex justify-center items-center p-4">
+      <div className="flex justify-center items-center mb-10 sm:mb-0 p-4">
         <div className="flex justify-evenly items-center ">
           <img
             className="w-[30px] block"
@@ -345,8 +345,8 @@ const OrderSummary = () => {
         </div>
       </div>
 
-      {/* Footer / Continue Button */}
-      <div className="fixed bottom-0 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] p-3 flex z-50 justify-start items-center mx-auto left-0 right-0">
+      {/* Footer normal screen / Continue Button */}
+      <div className="fixed bottom-0 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] p-3 hidden sm:flex z-50 justify-start items-center mx-auto left-0 right-0">
         <div className="w-[50%] flex flex-col gap-2.5">
           <span className="line-through text-[#878787] text-[12px] block">
             ₹{product.mrp}
@@ -357,6 +357,24 @@ const OrderSummary = () => {
         </div>
         <button
           className="w-[12%] bg-[#FFC107] text-black font-semibold py-3 border-none rounded-sm shadow-sm text-[14px] cursor-pointer"
+          onClick={handleContinue}
+        >
+          Continue To Payment
+        </button>
+      </div>
+
+      {/* Footer Mobile/small screen / Continue Button */}
+      <div className="fixed bottom-10 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-4 py-3 flex sm:hidden z-50 justify-between items-center mx-auto left-0 right-0">
+        <div className="flex flex-col">
+          <span className="line-through text-[#878787] text-[14px]">
+            ₹{product.mrp}
+          </span>
+          <span className="text-[20px] font-bold text-[#212121] leading-tight">
+            ₹{(parseFloat(product.selling_price) + donationAmount).toFixed(0)}
+          </span>
+        </div>
+        <button
+          className="bg-[#FBBC05] text-black font-bold py-3 px-6 rounded-md shadow-sm text-[16px] cursor-pointer"
           onClick={handleContinue}
         >
           Continue To Payment

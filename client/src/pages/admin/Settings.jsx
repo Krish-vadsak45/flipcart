@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 
 const Settings = () => {
   const [loading, setLoading] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
@@ -17,9 +16,10 @@ const Settings = () => {
     contact2: "",
     address: "",
     show_gpay: true,
+    show_phonepe: true,
+    show_paytm: true,
     pay_type: false, // false = UPI (pay_type_1), true = Common (pay_type_2)
     payment_script: "",
-    tb_password: "",
     allowed_ip: "",
     upi: "",
     pixel: "",
@@ -46,9 +46,10 @@ const Settings = () => {
           contact2: d.contact2 || "",
           address: d.address || "",
           show_gpay: d.show_gpay == 1 || d.show_gpay === true,
+          show_phonepe: d.show_phonepe == 1 || d.show_phonepe === true,
+          show_paytm: d.show_paytm == 1 || d.show_paytm === true,
           pay_type: d.pay_type == 1 || d.pay_type === true,
           payment_script: d.payment_script || "",
-          tb_password: d.tb_password || "",
           allowed_ip: d.allowed_ip || "",
           upi: d.upi || "",
           pixel: d.pixel || "",
@@ -175,8 +176,8 @@ const Settings = () => {
 
             {/* VISIBLE FIELDS Starting Here */}
 
-            {/* Show GPay */}
-            <div className="md:ml-[16.666667%] md:w-[66.666667%]">
+            {/* Payment Methods Visibility */}
+            <div className="md:ml-[16.666667%] md:w-[66.666667%] space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                   <input
@@ -197,6 +198,52 @@ const Settings = () => {
                   className="font-medium text-gray-700"
                 >
                   Show GPay
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                  <input
+                    type="checkbox"
+                    name="show_phonepe"
+                    id="show_phonepe"
+                    className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5]"
+                    checked={formData.show_phonepe}
+                    onChange={handleChange}
+                  />
+                  <label
+                    htmlFor="show_phonepe"
+                    className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
+                  ></label>
+                </div>
+                <label
+                  htmlFor="show_phonepe"
+                  className="font-medium text-gray-700"
+                >
+                  Show PhonePe
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                  <input
+                    type="checkbox"
+                    name="show_paytm"
+                    id="show_paytm"
+                    className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5]"
+                    checked={formData.show_paytm}
+                    onChange={handleChange}
+                  />
+                  <label
+                    htmlFor="show_paytm"
+                    className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
+                  ></label>
+                </div>
+                <label
+                  htmlFor="show_paytm"
+                  className="font-medium text-gray-700"
+                >
+                  Show PayTM
                 </label>
               </div>
             </div>
@@ -269,33 +316,6 @@ const Settings = () => {
                 />
               </div>
             )}
-
-            {/* Transaction Password */}
-            <div className="md:ml-[16.666667%] md:w-[66.666667%]">
-              <label
-                htmlFor="tb_password"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="tb_password"
-                  className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border focus:ring-indigo-500 focus:border-indigo-500 pr-10"
-                  value={formData.tb_password}
-                  onChange={handleChange}
-                  placeholder="Password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
 
             {/* Pixel Code */}
             <div className="md:ml-[16.666667%] md:w-[66.666667%]">

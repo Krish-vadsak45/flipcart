@@ -1,4 +1,29 @@
 const db = require("../config/db");
+const fs = require("fs");
+const csv = require("csv-parser");
+const logAction = require("../utils/logger");
+
+// Get Public Settings for frontend (UPI, visibility flags, etc.)
+const getPublicSettings = async (req, res) => {
+  try {
+    const [settings] = await db.query(
+      "SELECT show_gpay, show_phonepe, show_paytm, pay_type, payment_script, upi, pixel FROM tbl_setting WHERE id = 1",
+    );
+    if (settings.length > 0) {
+      const data = settings[0];
+      data.show_gpay = Boolean(data.show_gpay);
+      data.show_phonepe = Boolean(data.show_phonepe);
+      data.show_paytm = Boolean(data.show_paytm);
+      data.pay_type = Boolean(data.pay_type);
+      res.json({ success: true, data: data });
+    } else {
+      res.json({ success: false, message: "Settings not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
 // Get Products with Pagination and Search
 const getProducts = async (req, res) => {
@@ -179,6 +204,8 @@ const addProduct = async (req, res) => {
       [name],
     );
 
+    const firstVariant = variants[0] || {};
+
     if (existingProduct.length > 0) {
       productId = existingProduct[0].id;
       // If updating, the legacy logic deleted all variants first.
@@ -188,17 +215,59 @@ const addProduct = async (req, res) => {
         [productId],
       );
 
-      // Update display order if needed
-      if (disp_order) {
-        await connection.query(
-          "UPDATE tbl_product SET disp_order = ? WHERE id = ?",
-          [disp_order, productId],
-        );
-      }
+      // Update basic product info
+      await connection.query(
+        `UPDATE tbl_product SET 
+          disp_order = ?, 
+          color = ?, 
+          size = ?, 
+          storage = ?, 
+          selling_price = ?, 
+          mrp = ?, 
+          features = ?, 
+          img1 = ?, 
+          img2 = ?, 
+          img3 = ?, 
+          img4 = ?, 
+          img5 = ? 
+        WHERE id = ?`,
+        [
+          disp_order || 0,
+          firstVariant.color || "",
+          firstVariant.size || "",
+          firstVariant.storage || "",
+          firstVariant.selling_price || 0,
+          firstVariant.mrp || 0,
+          firstVariant.features || "",
+          firstVariant.img1 || "",
+          firstVariant.img2 || "",
+          firstVariant.img3 || "",
+          firstVariant.img4 || "",
+          firstVariant.img5 || "",
+          productId,
+        ],
+      );
     } else {
       const [result] = await connection.query(
-        "INSERT INTO tbl_product (name, disp_order) VALUES (?, ?)",
-        [name, disp_order || 0],
+        `INSERT INTO tbl_product 
+          (name, color, size, storage, selling_price, mrp, features, img1, img2, img3, img4, img5, disp_order, from_csv) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          name,
+          firstVariant.color || "",
+          firstVariant.size || "",
+          firstVariant.storage || "",
+          firstVariant.selling_price || 0,
+          firstVariant.mrp || 0,
+          firstVariant.features || "",
+          firstVariant.img1 || "",
+          firstVariant.img2 || "",
+          firstVariant.img3 || "",
+          firstVariant.img4 || "",
+          firstVariant.img5 || "",
+          disp_order || 0,
+          0,
+        ],
       );
       productId = result.insertId;
     }
@@ -308,10 +377,6 @@ const deleteRecord = async (req, res) => {
     connection.release();
   }
 };
-
-const fs = require("fs");
-const csv = require("csv-parser");
-const logAction = require("../utils/logger");
 
 const deleteAllRecords = async (req, res) => {
   const connection = await db.getConnection();
@@ -452,11 +517,59 @@ const uploadCsv = async (req, res) => {
 
           if (existing.length > 0) {
             productId = existing[0].id;
+            // Update existing product with CSV data (Master record)
+            await connection.query(
+              `UPDATE tbl_product SET 
+                 color = ?, 
+                 size = ?, 
+                 storage = ?, 
+                 selling_price = ?, 
+                 mrp = ?, 
+                 features = ?, 
+                 img1 = ?, 
+                 img2 = ?, 
+                 img3 = ?, 
+                 img4 = ?, 
+                 img5 = ?, 
+                 disp_order = ? 
+               WHERE id = ?`,
+              [
+                color,
+                size,
+                storage,
+                selling_price,
+                mrp,
+                features,
+                img1,
+                img2,
+                img3,
+                img4,
+                img5,
+                disp_order,
+                productId,
+              ],
+            );
           } else {
-            // Create Product
+            // Create Product - match existing tbl_product schema
             const [res] = await connection.query(
-              "INSERT INTO tbl_product (name, description, category_id, disp_order, status, popular, trending) VALUES (?, ?, ?, ?, 1, 0, 0)",
-              [name, "Description for " + name, 0, disp_order],
+              `INSERT INTO tbl_product 
+               (name, color, size, storage, selling_price, mrp, features, img1, img2, img3, img4, img5, disp_order, from_csv) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+              [
+                name,
+                color,
+                size,
+                storage,
+                selling_price,
+                mrp,
+                features,
+                img1,
+                img2,
+                img3,
+                img4,
+                img5,
+                disp_order,
+              ],
             );
             productId = res.insertId;
           }
@@ -464,10 +577,11 @@ const uploadCsv = async (req, res) => {
           // 2. Insert Variant
           await connection.query(
             `INSERT INTO tbl_product_verient 
-                 (product_id, color, size, storage, selling_price, mrp, features, img1, img2, img3, img4, img5, stock, status)
+                 (product_id, name, color, size, storage, selling_price, mrp, features, img1, img2, img3, img4, img5, from_csv)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
             [
               productId,
+              name,
               color,
               size,
               storage,
@@ -479,7 +593,6 @@ const uploadCsv = async (req, res) => {
               img3,
               img4,
               img5,
-              0,
             ],
           );
         }
@@ -525,10 +638,44 @@ const updateProduct = async (req, res) => {
       }
     }
 
+    const finalVariantsArray = Array.isArray(finalVariants)
+      ? finalVariants
+      : [];
+    const firstV = finalVariantsArray[0] || {};
+
     // Update Product Info
     await connection.query(
-      "UPDATE tbl_product SET name = ?, disp_order = ? WHERE id = ?",
-      [productName, disp_order || 0, id],
+      `UPDATE tbl_product SET 
+        name = ?, 
+        disp_order = ?, 
+        color = ?, 
+        size = ?, 
+        storage = ?, 
+        selling_price = ?, 
+        mrp = ?, 
+        features = ?, 
+        img1 = ?, 
+        img2 = ?, 
+        img3 = ?, 
+        img4 = ?, 
+        img5 = ? 
+      WHERE id = ?`,
+      [
+        productName,
+        disp_order || 0,
+        firstV.color || "",
+        firstV.size || "",
+        firstV.storage || "",
+        firstV.selling_price || 0,
+        firstV.mrp || 0,
+        firstV.features || "",
+        firstV.img1 || "",
+        firstV.img2 || "",
+        firstV.img3 || "",
+        firstV.img4 || "",
+        firstV.img5 || "",
+        id,
+      ],
     );
 
     // Replace Variants
@@ -603,6 +750,7 @@ const deleteById = async (req, res) => {
 };
 
 module.exports = {
+  getPublicSettings,
   updateProduct,
   deleteById,
   getProducts,

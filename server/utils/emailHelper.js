@@ -22,13 +22,34 @@ const sendEmail = async (to, subject, html) => {
       },
     });
 
-    // Send mail
-    const info = await transporter.sendMail({
+    // Validate recipients
+    const recipientProvided = !!(
+      (Array.isArray(to) && to.length > 0) ||
+      (typeof to === "string" && to.trim() !== "")
+    );
+
+    if (!recipientProvided) {
+      console.warn(
+        "No recipient provided to sendEmail(); falling back to admin_email",
+      );
+      to = admin_email; // fallback to admin email from settings
+    }
+
+    const mailOptions = {
       from: `"${company_name}" <${admin_email}>`,
       to: to,
-      subject: subject,
-      html: html,
+      subject: subject || `${company_name} Notification`,
+      html: html || "",
+    };
+
+    console.debug("Sending email with options:", {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
     });
+
+    // Send mail
+    const info = await transporter.sendMail(mailOptions);
 
     console.log("Message sent: %s", info.messageId);
     return {

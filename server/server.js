@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const path = require("path");
+const fs = require("fs");
 const maintenanceMiddleware = require("./middleware/maintenanceMiddleware");
 
 dotenv.config();
@@ -10,17 +11,14 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
 // Middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173", // Local Vite/React dev server
-      "https://flipcart-fawn.vercel.app", // Replace with your actual Frontend URL
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allow cookies if needed
-  }),
-);
+app.use(cors());
 app.use(maintenanceMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
