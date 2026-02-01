@@ -30,11 +30,6 @@ const Products = () => {
   const [view, setView] = useState("list"); // 'list' | 'form'
   const [editingId, setEditingId] = useState(null);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-
   // Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -47,22 +42,19 @@ const Products = () => {
   const [variants, setVariants] = useState([]);
 
   useEffect(() => {
-    fetchProducts(currentPage);
-  }, [currentPage]);
+    fetchProducts();
+  }, []);
 
-  const fetchProducts = async (page = 1) => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
-      const start = (page - 1) * itemsPerPage;
-      const res = await api.get(
-        `/products?start=${start}&length=${itemsPerPage}`,
-      );
+      // Fetch all products by requesting a large length
+      const res = await api.get(`/products?start=0&length=100000`);
 
       const list = res.data.data || [];
-      const total = res.data.recordsTotal || 0; // Assuming backend sends recordsTotal like DataTables
+      // const total = res.data.recordsTotal || 0;
 
       setProducts(list);
-      setTotalItems(total);
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch products", err);
@@ -405,72 +397,6 @@ const Products = () => {
                 )}
               </tbody>
             </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex flex-col md:flex-row justify-between items-center p-4 border-t border-gray-100 bg-gray-50/50 gap-4">
-            <div className="text-sm text-gray-500">
-              Showing{" "}
-              <span className="font-medium">
-                {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}
-              </span>{" "}
-              to{" "}
-              <span className="font-medium">
-                {Math.min(currentPage * itemsPerPage, totalItems)}
-              </span>{" "}
-              of <span className="font-medium">{totalItems}</span> results
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                className={`px-3 py-1 rounded border text-sm ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50 text-gray-700"}`}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-
-              {Array.from(
-                { length: Math.ceil(totalItems / itemsPerPage) },
-                (_, i) => i + 1,
-              )
-                .filter((page) => {
-                  // Simple logic to show first, last, current, and adjacent pages
-                  return (
-                    page === 1 ||
-                    page === Math.ceil(totalItems / itemsPerPage) ||
-                    Math.abs(page - currentPage) <= 1
-                  );
-                })
-                .map((page, index, array) => (
-                  <div key={page} className="flex items-center">
-                    {index > 0 && array[index - 1] !== page - 1 && (
-                      <span className="px-2 text-gray-400">...</span>
-                    )}
-                    <button
-                      className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${currentPage === page ? "bg-blue-600 text-white border-blue-600" : "bg-white hover:bg-gray-50 text-gray-700"}`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  </div>
-                ))}
-
-              <button
-                className={`px-3 py-1 rounded border text-sm ${currentPage === Math.ceil(totalItems / itemsPerPage) || totalItems === 0 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-50 text-gray-700"}`}
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    Math.min(prev + 1, Math.ceil(totalItems / itemsPerPage)),
-                  )
-                }
-                disabled={
-                  currentPage === Math.ceil(totalItems / itemsPerPage) ||
-                  totalItems === 0
-                }
-              >
-                Next
-              </button>
-            </div>
           </div>
         </div>
       </div>

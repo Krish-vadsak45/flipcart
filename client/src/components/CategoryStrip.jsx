@@ -22,7 +22,7 @@ const CategoryStrip = () => {
 
   return (
     <div className="bg-white overflow-x-auto no-scrollbar shadow-sm">
-      <div className="flex pl-0 p-3 min-w-max space-x-1">
+      <div className="flex pl-0 p-3 py-0.5 min-w-max space-x-1">
         {categories.map((cat, i) => (
           <div
             key={i}

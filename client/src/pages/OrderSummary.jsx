@@ -364,7 +364,7 @@ const OrderSummary = () => {
       </div>
 
       {/* Footer Mobile/small screen / Continue Button */}
-      <div className="fixed bottom-10 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-4 py-3 flex sm:hidden z-50 justify-between items-center mx-auto left-0 right-0">
+      <div className="fixed bottom-7 w-full bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-4 py-3 flex sm:hidden z-50 justify-between items-center mx-auto left-0 right-0">
         <div className="flex flex-col">
           <span className="line-through text-[#878787] text-[14px]">
             ₹{product.mrp}

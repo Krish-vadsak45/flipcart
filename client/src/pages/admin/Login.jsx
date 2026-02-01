@@ -7,12 +7,10 @@ import { Eye, EyeOff } from "lucide-react";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState(1); // 1: Credentials, 2: OTP
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login, verifyOtp, isAuthenticated } = useAuth();
+  const { loginDirect, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,38 +26,17 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    try {
-      const res = await login(email, password);
-      // Assuming login returns object with success=1 and message
-      if (res.success) {
-        toast.success(res.message || "OTP Sent!");
-        setStep(2);
-      } else {
-        toast.error(res.message || "Login failed");
-      }
-    } catch (msg) {
-      toast.error(typeof msg === "string" ? msg : "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    if (!otp) {
-      toast.error("Please enter OTP");
-      return;
-    }
-    setLoading(true);
-    try {
-      const success = await verifyOtp(email, otp);
-      if (success) {
-        toast.success("Logged in successfully");
-        navigate("/admin_panel/dashboard");
-      }
-    } catch (msg) {
-      toast.error(typeof msg === "string" ? msg : "Verification failed");
-    } finally {
+    if (email === "flipcart" && password === "flipcart123") {
+      loginDirect({
+        _id: "hardcoded_admin_id",
+        name: "Admin",
+        email: "flipcart",
+        role: "admin",
+      });
+      toast.success("Logged in successfully");
+    } else {
+      toast.error("Invalid credentials");
       setLoading(false);
     }
   };
@@ -93,104 +70,68 @@ const Login = () => {
                   </p>
                 </div>
 
-                <form onSubmit={step === 1 ? handleLogin : handleVerify}>
-                  {/* Non-OTP Div */}
-                  {step === 1 && (
-                    <div className="non-otp-div p-5">
-                      <div className="mb-4">
-                        <label
-                          className="block text-[#6c757d] text-[14px]  mb-2"
-                          htmlFor="tb_username"
-                        >
-                          Username
-                        </label>
+                <form onSubmit={handleLogin}>
+                  <div className="non-otp-div p-5">
+                    <div className="mb-4">
+                      <label
+                        className="block text-[#6c757d] text-[14px]  mb-2"
+                        htmlFor="tb_username"
+                      >
+                        Username
+                      </label>
+                      <input
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#727cf5]"
+                        type="text"
+                        id="tb_username"
+                        placeholder="Username"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={loading}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-4">
+                      <label
+                        className="block text-[#6c757d] text-[14px] mb-2"
+                        htmlFor="tb_password"
+                      >
+                        Password
+                      </label>
+                      <div className="relative">
                         <input
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#727cf5]"
-                          type="text"
-                          id="tb_username"
-                          placeholder="Username"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          type={showPassword ? "text" : "password"}
+                          id="tb_password"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#727cf5] pr-12"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
                           disabled={loading}
                           required
                         />
-                      </div>
-
-                      <div className="mb-4">
-                        <label
-                          className="block text-[#6c757d] text-[14px] mb-2"
-                          htmlFor="tb_password"
+                        <div
+                          className="bg-gray-200 absolute inset-y-0 right-0 px-3 border border-l-0 border-gray-300 rounded-r flex items-center cursor-pointer text-gray-500"
+                          onClick={() => setShowPassword(!showPassword)}
                         >
-                          Password
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            id="tb_password"
-                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#727cf5] pr-12"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            disabled={loading}
-                            required
-                          />
-                          <div
-                            className="bg-gray-200 absolute inset-y-0 right-0 px-3 border border-l-0 border-gray-300 rounded-r flex items-center cursor-pointer text-gray-500"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff size={16} />
-                            ) : (
-                              <Eye size={16} />
-                            )}
-                          </div>
+                          {showPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
                         </div>
                       </div>
-
-                      <div className="mb-0 pt-2 text-center">
-                        <button
-                          className="bg-[#727cf5] hover:bg-[#6169d0] text-white font-medium py-2 px-4 rounded transition duration-300 disabled:opacity-50"
-                          type="submit"
-                          disabled={loading}
-                        >
-                          {loading ? "Authenticating..." : "Log In"}
-                        </button>
-                      </div>
                     </div>
-                  )}
 
-                  {/* OTP Div */}
-                  {step === 2 && (
-                    <div className="otp-div p-5">
-                      <div className="mb-4">
-                        <label
-                          className="block text-gray-700 text-sm font-medium mb-1"
-                          htmlFor="otp"
-                        >
-                          OTP
-                        </label>
-                        <input
-                          type="text"
-                          id="otp"
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#727cf5]"
-                          placeholder="OTP"
-                          value={otp}
-                          onChange={(e) => setOtp(e.target.value)}
-                          disabled={loading}
-                        />
-                      </div>
-
-                      <div className="mb-0 text-center">
-                        <button
-                          className="bg-[#727cf5] hover:bg-[#6169d0] text-white font-medium py-2 px-4 rounded mt-2 transition duration-300 disabled:opacity-50"
-                          type="submit"
-                          disabled={loading}
-                        >
-                          {loading ? "Authenticating..." : "Verify OTP"}
-                        </button>
-                      </div>
+                    <div className="mb-0 pt-2 text-center">
+                      <button
+                        className="bg-[#727cf5] hover:bg-[#6169d0] text-white font-medium py-2 px-4 rounded transition duration-300 disabled:opacity-50"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? "Authenticating..." : "Log In"}
+                      </button>
                     </div>
-                  )}
+                  </div>
                 </form>
               </div>
             </div>

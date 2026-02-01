@@ -84,7 +84,7 @@ const Address = () => {
             </div>
           </div>
           <div className="w-[80%]">
-            <h4 className="pl-30 mb-0 mt-1 ml-2 text-lg font-medium text-gray-700">
+            <h4 className="pl-10 md:pl-30 mb-0 mt-1 ml-2  md:text-lg font-medium text-gray-700">
               Add delivery address
             </h4>
           </div>

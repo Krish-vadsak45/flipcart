@@ -57,11 +57,8 @@ const Header = () => {
         </div>
 
         {/* Bottom Row: Search Bar */}
-        <div className="px-10 pb-2">
+        <div className=" pb-2">
           <div className="bg-white rounded-[2px] w-full flex items-center shadow-sm h-10">
-            <div className="pl-2 mr-5 pointer-events-none">
-              {/* <Search className="w-4 h-4 text-gray-400" /> */}
-            </div>
             <input
               type="text"
               className="block w-full px-2 text-[14px] text-gray-800 bg-white border-none rounded-[2px] focus:outline-none placeholder-gray-500 h-full"
