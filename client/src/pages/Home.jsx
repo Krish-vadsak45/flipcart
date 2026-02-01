@@ -31,7 +31,6 @@ const Home = () => {
         const res = await axios.get(
           `/api/products?start=${start}&length=${length}`,
         );
-
         if (res.data.success && res.data.data.length > 0) {
           setProducts((prev) => {
             // Avoid duplicates if strict mode causes double fetch
