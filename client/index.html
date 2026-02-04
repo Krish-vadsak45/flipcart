@@ -29,11 +29,15 @@
         window,
         document,
         "script",
-        "https://connect.facebook.net/en_US/fbevents.js",
+        "https://connect.facebook.net/en_US/fbevents.js"
       );
       fbq("init", "1386005575970236");
       fbq("track", "PageView");
     </script>
+  </head>
+
+  <body>
+    <!-- Facebook Pixel noscript MUST be inside body -->
     <noscript>
       <img
         height="1"
@@ -42,8 +46,7 @@
         src="https://www.facebook.com/tr?id=1386005575970236&ev=PageView&noscript=1"
       />
     </noscript>
-  </head>
-  <body>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
