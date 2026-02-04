@@ -18,7 +18,10 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://flipcart-fawn.vercel.app", // EXACT frontend URL
+  credentials: true
+}));
 app.use(maintenanceMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
