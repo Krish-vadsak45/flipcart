@@ -126,6 +126,8 @@ const getProductById = async (req, res) => {
       ...new Set(product.verients?.map((v) => v.color).filter(Boolean)),
     ].map((c) => ({ color_name: c }));
 
+    console.log(`Fetched product with ID=${id}`);
+
     res.json({
       success: 1,
       status: 1,
