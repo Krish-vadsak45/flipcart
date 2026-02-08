@@ -105,7 +105,7 @@ const Payment = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen lg:pb-[70px]">
+    <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="container mx-auto min-w-full p-3 pb-0 bg-white sticky top-0 z-50 shadow-sm">
         <div className="flex items-center justify-between">
@@ -141,7 +141,7 @@ const Payment = () => {
         </div>
       </div>
 
-      <div className="bg-white mb-15">
+      <div className="bg-white md:mb-15">
         {/* Payment Methods Section */}
         {settings.pay_type ? (
           <div className="m-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
@@ -333,14 +333,14 @@ const Payment = () => {
           <img
             src="/assets/images/SecurePay.jpg"
             alt="Secure Pay"
-            className="w-full lg:h-100 max-w-sm mb-25 lg:mb-0 lg:min-w-255"
+            className="w-full lg:h-100 max-w-sm mb-5 md:mb-25 lg:mb-0 lg:min-w-255"
           />
         </div>
       </div>
 
       {/* Footer */}
       {/* Mobile Footer (Exact match to image) */}
-      <div className="fixed bottom-0 left-0 right-0 w-full bg-white shadow-[0_-1px_5px_rgba(0,0,0,0.1)] p-4 px-6 flex md:hidden z-50 justify-between items-center border-t border-gray-100">
+      <div className="w-full bg-white shadow-[0_-1px_5px_rgba(0,0,0,0.1)] p-4 px-6 flex md:hidden z-50 justify-between items-center border-t border-gray-100">
         <div className="flex items-center">
           <span className="text-[24px] font-medium text-[#212121]">
             ₹{sellingPrice}
