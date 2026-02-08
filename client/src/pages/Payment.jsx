@@ -119,7 +119,7 @@ const Payment = () => {
                 />
               </div>
             </div>
-            <div className="-ml-4.5">
+            <div className="">
               <p className="text-[13px] text-gray-500 mb-0 leading-none">
                 Step 3 of 3
               </p>
@@ -145,7 +145,9 @@ const Payment = () => {
         {/* Payment Methods Section */}
         {settings.pay_type ? (
           <div className="m-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-            <div dangerouslySetInnerHTML={{ __html: settings.payment_script }} />
+            <div
+              dangerouslySetInnerHTML={{ __html: settings.payment_script }}
+            />
           </div>
         ) : (
           <div className="bg-[#f5f5f5] rounded-lg overflow-hidden">
@@ -156,7 +158,9 @@ const Payment = () => {
                   alt="UPI"
                   className="w-[30px]"
                 />
-                <p className="text-[15px] font-medium ml-2 text-gray-700">UPI</p>
+                <p className="text-[15px] font-medium ml-2 text-gray-700">
+                  UPI
+                </p>
               </div>
               <img
                 src="/assets/images/up_arw.png"
@@ -336,7 +340,7 @@ const Payment = () => {
 
       {/* Footer */}
       {/* Mobile Footer (Exact match to image) */}
-      <div className="fixed bottom-10 left-0 right-0 w-full bg-white shadow-[0_-1px_5px_rgba(0,0,0,0.1)] p-4 px-6 flex md:hidden z-50 justify-between items-center border-t border-gray-100">
+      <div className="fixed bottom-0 left-0 right-0 w-full bg-white shadow-[0_-1px_5px_rgba(0,0,0,0.1)] p-4 px-6 flex md:hidden z-50 justify-between items-center border-t border-gray-100">
         <div className="flex items-center">
           <span className="text-[24px] font-medium text-[#212121]">
             ₹{sellingPrice}
