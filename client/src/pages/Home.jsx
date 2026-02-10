@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import ProductCard from "../components/ProductCard";
 import CategoryStrip from "../components/CategoryStrip";
 import DealsOfTheDay from "../components/DealsOfTheDay";
+import { localService } from "../services/localService";
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -28,13 +28,10 @@ const Home = () => {
         setLoading(true);
         const length = 10;
         const start = (page - 1) * length;
-        const res = await axios.get(
-          `/api/products?start=${start}&length=${length}`,
-        );
-        if (res.data.success && res.data.data.length > 0) {
+        const res = await localService.getProducts({ start, length });
+        if (res.success && res.data.length > 0) {
           setProducts((prev) => {
-            // Avoid duplicates if strict mode causes double fetch
-            const newProducts = res.data.data.filter(
+            const newProducts = res.data.filter(
               (p) => !prev.some((existing) => existing.id === p.id),
             );
             return [...prev, ...newProducts];

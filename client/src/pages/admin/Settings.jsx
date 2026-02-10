@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { localService } from "../../services/localService";
 
 const Settings = () => {
   const [loading, setLoading] = useState(true);
-  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
     cmp_name: "",
@@ -18,11 +17,12 @@ const Settings = () => {
     show_gpay: true,
     show_phonepe: true,
     show_paytm: true,
-    pay_type: false, // false = UPI (pay_type_1), true = Common (pay_type_2)
+    pay_type: false,
     payment_script: "",
     allowed_ip: "",
     upi: "",
     pixel: "",
+    is_maintenance: false,
   });
 
   useEffect(() => {
@@ -32,28 +32,9 @@ const Settings = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/settings");
-      // Mapping matching get_data from manage_setting.js
-      if (res.data.success) {
-        const d = res.data.data;
-        setFormData({
-          id: d.id,
-          cmp_name: d.cmp_name || d.company_name || "",
-          cmp_email: d.cmp_email || d.company_email || "",
-          admin_email: d.admin_email || "",
-          admin_email_password: d.admin_email_password || "",
-          contact1: d.contact1 || "",
-          contact2: d.contact2 || "",
-          address: d.address || "",
-          show_gpay: !!d.show_gpay,
-          show_phonepe: !!d.show_phonepe,
-          show_paytm: !!d.show_paytm,
-          pay_type: !!d.pay_type,
-          payment_script: d.payment_script || "",
-          allowed_ip: d.allowed_ip || "",
-          upi: d.upi || "",
-          pixel: d.pixel || "",
-        });
+      const res = await localService.getSettings();
+      if (res.success) {
+        setFormData(res.data);
       }
     } catch (error) {
       toast.error("Failed to load settings");
@@ -62,30 +43,10 @@ const Settings = () => {
     }
   };
 
-  const handleChange = (e) => {
-    const { id, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.pay_type && !formData.upi) {
-      toast.error("UPI ID is required");
-      return;
-    }
-    try {
-      const res = await axios.post("/api/settings", formData);
-      if (res.data.success) {
-        toast.success(res.data.message);
-      } else {
-        toast.error("Failed to save settings");
-      }
-    } catch (error) {
-      toast.error("Failed to save settings");
-    }
+  const handleChange = () => {
+    toast.error(
+      "Settings are read-only. Edit client/src/data/config.js instead.",
+    );
   };
 
   if (loading)
@@ -99,186 +60,98 @@ const Settings = () => {
         <h4 className="text-xl font-bold text-gray-800">Settings</h4>
       </div>
 
+      <div className="mb-6 bg-blue-50 border-l-4 border-blue-400 p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg
+              className="h-5 w-5 text-blue-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-blue-700">
+              Settings are managed in <strong>client/src/data/config.js</strong>
+              . Edit that file and redeploy to update these values.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-8">
-          <form
-            noValidate
-            onSubmit={handleSubmit}
-            className="space-y-6 max-w-4xl"
-          >
-            {/* 
-               Legacy Project Notes:
-               Many fields were hidden with 'd-none' in manage_setting.php.
-               However, the React implementation below RETHINKS this.
-               For exact fidelity, we should respect the 'd-none' class logic.
-
-               Visible Fields in Legacy:
-               - Show Gpay (Switch)
-               - Use Common Payment System (Switch) -> Toggles between UPI and Payment Script
-               - Password (tb_password)
-               - Pixel Code
-               - Submit Button
-               
-               Hidden Fields in Legacy (class="d-none"):
-               - Company Name, Company Email
-               - Admin Email, Admin Password
-               - Contact 1, Contact 2
-               - Address
-               - IP Allowed (Settings for this EXIST in get_data, but DOM uses d-none)
-            */}
-
-            {/* HIDDEN FIELDS - Keeping them in DOM but hidden to match legacy behavior exactly if desired, 
-                or we can just omit rendering. Since the user asked for "same logic", standard practice 
-                is that if they are hidden in legacy, they are hidden here. 
-                I will wrap them in a hidden div for data retention but invisibility.
-            */}
+          <form className="space-y-6 max-w-4xl">
+            {/* Hidden Fields (Legacy parity - present in DOM but hidden) */}
             <div className="hidden">
-              <input
-                type="text"
-                id="cmp_name"
-                value={formData.cmp_name}
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                id="cmp_email"
-                value={formData.cmp_email}
-                onChange={handleChange}
-              />
-              <input
-                type="email"
-                id="admin_email"
-                value={formData.admin_email}
-                onChange={handleChange}
-              />
+              <input type="text" value={formData.cmp_name} readOnly />
+              <input type="email" value={formData.cmp_email} readOnly />
+              <input type="email" value={formData.admin_email} readOnly />
               <input
                 type="password"
-                id="admin_email_password"
                 value={formData.admin_email_password}
-                onChange={handleChange}
+                readOnly
               />
-              <input
-                type="text"
-                id="contact1"
-                value={formData.contact1}
-                onChange={handleChange}
-              />
-              <input
-                type="text"
-                id="contact2"
-                value={formData.contact2}
-                onChange={handleChange}
-              />
-              <textarea
-                id="address"
-                value={formData.address}
-                onChange={handleChange}
-              ></textarea>
-              <input
-                type="text"
-                id="allowed_ip"
-                value={formData.allowed_ip}
-                onChange={handleChange}
-              />
+              <input type="text" value={formData.contact1} readOnly />
+              <input type="text" value={formData.contact2} readOnly />
+              <textarea value={formData.address} readOnly></textarea>
+              <input type="text" value={formData.allowed_ip} readOnly />
             </div>
-
-            {/* VISIBLE FIELDS Starting Here */}
 
             {/* Payment Methods Visibility */}
             <div className="md:ml-[16.666667%] md:w-[66.666667%] space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                  <input
-                    type="checkbox"
-                    name="show_gpay"
-                    id="show_gpay"
-                    className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5]"
-                    checked={formData.show_gpay}
-                    onChange={handleChange}
-                  />
+              {[
+                {
+                  id: "show_gpay",
+                  label: "Show GPay",
+                  value: formData.show_gpay,
+                },
+                {
+                  id: "show_phonepe",
+                  label: "Show PhonePe",
+                  value: formData.show_phonepe,
+                },
+                {
+                  id: "show_paytm",
+                  label: "Show PayTM",
+                  value: formData.show_paytm,
+                },
+                {
+                  id: "pay_type",
+                  label: "Use Common Payment System",
+                  value: formData.pay_type,
+                },
+              ].map((item) => (
+                <div key={item.id} className="flex items-center space-x-3">
+                  <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input
+                      type="checkbox"
+                      id={item.id}
+                      className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5] disabled:cursor-not-allowed"
+                      checked={item.value}
+                      onChange={handleChange}
+                    />
+                    <label
+                      htmlFor={item.id}
+                      className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
+                    ></label>
+                  </div>
                   <label
-                    htmlFor="show_gpay"
-                    className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
-                  ></label>
+                    htmlFor={item.id}
+                    className="font-medium text-gray-700"
+                  >
+                    {item.label}
+                  </label>
                 </div>
-                <label
-                  htmlFor="show_gpay"
-                  className="font-medium text-gray-700"
-                >
-                  Show GPay
-                </label>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                  <input
-                    type="checkbox"
-                    name="show_phonepe"
-                    id="show_phonepe"
-                    className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5]"
-                    checked={formData.show_phonepe}
-                    onChange={handleChange}
-                  />
-                  <label
-                    htmlFor="show_phonepe"
-                    className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
-                  ></label>
-                </div>
-                <label
-                  htmlFor="show_phonepe"
-                  className="font-medium text-gray-700"
-                >
-                  Show PhonePe
-                </label>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                  <input
-                    type="checkbox"
-                    name="show_paytm"
-                    id="show_paytm"
-                    className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5]"
-                    checked={formData.show_paytm}
-                    onChange={handleChange}
-                  />
-                  <label
-                    htmlFor="show_paytm"
-                    className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
-                  ></label>
-                </div>
-                <label
-                  htmlFor="show_paytm"
-                  className="font-medium text-gray-700"
-                >
-                  Show PayTM
-                </label>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                  <input
-                    type="checkbox"
-                    name="pay_type"
-                    id="pay_type"
-                    className="peer absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-[#727cf5]"
-                    checked={formData.pay_type}
-                    onChange={handleChange}
-                  />
-                  <label
-                    htmlFor="pay_type"
-                    className="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#727cf5]"
-                  ></label>
-                </div>
-                <label htmlFor="pay_type" className="font-medium text-gray-700">
-                  Use Common Payment System
-                </label>
-              </div>
+              ))}
             </div>
 
-            {/* Use Common Payment System (Legacy d-none, but referenced in js?)  */}
-
-            {/* Rendering UPI Field (pay_type_1) - Visible if pay_type is false (UPI mode) */}
+            {/* UPI ID Field (Visible if pay_type is false) */}
             {!formData.pay_type && (
               <div className="md:ml-[16.666667%] md:w-[66.666667%]">
                 <label
@@ -290,19 +163,14 @@ const Settings = () => {
                 <input
                   type="text"
                   id="upi"
-                  className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border bg-gray-50 text-gray-500"
                   value={formData.upi}
-                  onChange={handleChange}
-                  placeholder="UPI ID"
-                  required
+                  readOnly
                 />
-                <div className="text-red-500 text-xs mt-1 hidden">
-                  Please enter UPI ID.
-                </div>
               </div>
             )}
 
-            {/* Rendering Payment Script (pay_type_2) - Visible if pay_type is true */}
+            {/* Payment Script Field (Visible if pay_type is true) */}
             {formData.pay_type && (
               <div className="md:ml-[16.666667%] md:w-[66.666667%]">
                 <label
@@ -314,10 +182,9 @@ const Settings = () => {
                 <input
                   type="text"
                   id="payment_script"
-                  className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border bg-gray-50 text-gray-500"
                   value={formData.payment_script}
-                  onChange={handleChange}
-                  placeholder="Payment Script"
+                  readOnly
                 />
               </div>
             )}
@@ -333,21 +200,37 @@ const Settings = () => {
               <textarea
                 id="pixel"
                 rows="4"
-                className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border-gray-300 rounded-md shadow-sm p-2.5 border bg-gray-50 text-gray-500"
                 value={formData.pixel}
-                onChange={handleChange}
-                placeholder="Pixel Code"
+                readOnly
               ></textarea>
             </div>
 
-            {/* Submit Button */}
-            <div className="md:ml-[16.666667%] md:w-[66.666667%] text-right">
-              {/* Offset matching legacy offset-sm-3 if possible, mimicking structure */}
-              <button
-                type="submit"
-                className="inline-flex items-center px-4 py-2 bg-[#727cf5] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#5b66d1] active:bg-[#5b66d1] focus:outline-none focus:border-[#5b66d1] focus:ring ring-[#aeb4ff] disabled:opacity-25 transition ease-in-out duration-150"
+            {/* Maintenance Mode */}
+            <div className="md:ml-[16.666667%] md:w-[66.666667%] flex items-center gap-2 py-2">
+              <input
+                type="checkbox"
+                id="is_maintenance"
+                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                checked={formData.is_maintenance}
+                readOnly
+              />
+              <label
+                htmlFor="is_maintenance"
+                className="text-sm font-medium text-gray-700"
               >
-                Submit
+                Enable Maintenance Mode (Hides storefront)
+              </label>
+            </div>
+
+            {/* Submit Button (Read Only) */}
+            <div className="md:ml-[16.666667%] md:w-[66.666667%] text-right">
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 bg-gray-400 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest cursor-not-allowed opacity-50"
+                disabled
+              >
+                Read Only (Edit config.js)
               </button>
             </div>
           </form>

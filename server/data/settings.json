@@ -1,9 +1,0 @@
-{
-  "show_gpay": true,
-  "show_phonepe": true,
-  "show_paytm": true,
-  "pay_type": true,
-  "payment_script": "",
-  "upi": "example@upi",
-  "pixel": ""
-}

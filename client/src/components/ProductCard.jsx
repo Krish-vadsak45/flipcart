@@ -26,7 +26,7 @@ const ProductCard = ({ product }) => {
   return (
     <div className="bg-white transition-shadow p-4 border border-gray-200 h-full">
       <Link
-        to={`/product-details/${product.md5_id}?r=${randomRating}&r1=${ratingCount}`}
+        to={`/product-details/${product.id}?r=${randomRating}&r1=${ratingCount}`}
         className="flex flex-col h-full text-inherit no-underline"
       >
         <div className="relative h-[170px] flex items-center justify-center w-full">

@@ -10,7 +10,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { loginDirect, isAuthenticated } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,22 +21,19 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please enter login details");
-      return;
-    }
     setLoading(true);
 
-    if (email === "flipcart" && password === "flipcart123") {
-      loginDirect({
-        _id: "hardcoded_admin_id",
-        name: "Admin",
-        email: "flipcart",
-        role: "admin",
-      });
-      toast.success("Logged in successfully");
-    } else {
-      toast.error("Invalid credentials");
+    try {
+      const res = await login(email, password);
+      if (res.success) {
+        toast.success(res.message || "Logged in successfully");
+        // navigate is handled by the useEffect watching isAuthenticated
+      } else {
+        toast.error(res.message || "Invalid credentials");
+        setLoading(false);
+      }
+    } catch (error) {
+      toast.error(error.message || "An error occurred");
       setLoading(false);
     }
   };

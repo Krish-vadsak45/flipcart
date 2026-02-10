@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { localService } from "../services/localService";
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -24,17 +24,17 @@ const Payment = () => {
     // Fetch settings from API
     const fetchSettings = async () => {
       try {
-        const response = await axios.get("/api/products/settings");
-        if (response.data.success) {
-          setSettings(response.data.data);
+        const response = await localService.getSettings();
+        if (response.success) {
+          setSettings(response.data);
           // Set initial selected method based on availability
-          const data = response.data.data;
+          const data = response.data;
           console.log("Settings data:", data);
-          if (data.show_phonepe == 1) {
+          if (data.show_phonepe) {
             setSelectedMethod("phonepe");
-          } else if (data.show_gpay == 1) {
+          } else if (data.show_gpay) {
             setSelectedMethod("gpay");
-          } else if (data.show_paytm == 1) {
+          } else if (data.show_paytm) {
             setSelectedMethod("paytm");
           }
         }

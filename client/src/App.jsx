@@ -5,7 +5,6 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Login from "./pages/admin/Login";
 import AdminLayout from "./layouts/AdminLayout";
 import MainLayout from "./layouts/MainLayout";
@@ -20,60 +19,24 @@ import Maintenance from "./pages/Maintenance";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Settings from "./pages/admin/Settings";
+import { localService } from "./services/localService";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   const [isMaintenance, setIsMaintenance] = useState(false);
 
   useEffect(() => {
-    // 1. Timezone Logic (Legacy parity)
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    document.cookie = `timezone=${tz}; path=/; max-age=315360000`; // 10 years
-
-    // 2. Maintenance Check
+    // 1. Maintenance Check
     const checkMaintenance = async () => {
-      try {
-        // Check specific endpoint for status
-        const res = await axios.get("/api/maintenance-check");
-        if (res.data && res.data.maintenance) {
-          setIsMaintenance(true);
-        }
-      } catch (error) {
-        if (
-          error.response &&
-          (error.response.status === 503 || error.response.data?.maintenance)
-        ) {
+      const res = await localService.getSettings();
+      if (res.success && res.data.is_maintenance) {
+        // Skip maintenance for admin panel
+        if (!window.location.pathname.startsWith("/admin_panel")) {
           setIsMaintenance(true);
         }
       }
     };
-
     checkMaintenance();
-
-    // Global interceptor for runtime catching
-    const interceptor = axios.interceptors.response.use(
-      (response) => {
-        if (
-          response.data &&
-          (response.data.maintenance === true ||
-            response.data.error ===
-              "The website is under maintenance. Please check back soon.")
-        ) {
-          setIsMaintenance(true);
-        }
-        return response;
-      },
-      (error) => {
-        if (
-          error.response &&
-          (error.response.status === 503 || error.response.data?.maintenance)
-        ) {
-          setIsMaintenance(true);
-        }
-        return Promise.reject(error);
-      },
-    );
-
-    return () => axios.interceptors.response.eject(interceptor);
   }, []);
 
   if (isMaintenance) {
@@ -82,6 +45,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Admin Routes */}
         <Route path="/admin_panel/login" element={<Login />} />

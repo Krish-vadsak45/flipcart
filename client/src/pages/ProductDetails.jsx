@@ -6,7 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import toast from "react-hot-toast";
-import axios from "axios";
+import { localService } from "../services/localService";
 import "./ProductDetails.css"; // Import legacy styles for product detail section
 
 const ProductDetails = () => {
@@ -44,10 +44,10 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`/api/products/${id}`);
-        if (response.data && response.data.success) {
-          setProduct(response.data.data);
-          console.log("Fetched product:", response.data.data);
+        const response = await localService.getProductById(id);
+        if (response.success) {
+          setProduct(response);
+          console.log("Fetched product:", response);
         } else {
           toast.error("Failed to load product");
         }
